@@ -6,16 +6,25 @@ class Bitvector
 {
 	//el tamano es de multiplos de 8 
 	size_t m_size;
-	uint32 m_array=0; //entero de 32 bits
-
+	uint32 * m_array=0; //enteros de 32 bits
 
 public:
 
+	uint32* getArray()
+	{
+		return m_array;
+	}
+
 	Bitvector(size_t newsize)
 	{
+		if (newsize == 0) newsize = 1;
+
 		//hay que calcular el tamano como multiplo de 32		
-		int realzise = newsize + 32- (newsize % 32);
+		int realzise = newsize + 32 - (newsize % 32);
 		m_size = realzise;
+		//inicializar m_array al tamano requerido
+		m_array = new uint32[m_size / 32];
+		clearAll();
 	}
 
 	size_t getsize()
@@ -23,45 +32,60 @@ public:
 		return m_size;
 	}
 
-	//operator []
-	bool operator[](int index)
+	//notacion con operador corchetes
+	bool operator[] (int idx)
 	{
-		getval(index);
+		return getval(idx);
 	}
-
-	//notacion con operadores
 	//getter
 	bool getval(int index)
 	{
-		return (m_array >> index) & 1;
+		int bitindex = index % 32;
+		int bitbank = index / 32;
+		return m_array[bitbank] & (1 << bitindex) >> bitindex;
 	}
 	//setter
 	void setval(bool b, int index)
 	{
-		uint32 fullb = b;
-		printf("antes   %x \n", fullb);
-
+		int bitindex = index % 32;
+		int bitbank = index / 32;
 		if (b)
 		{
-			m_array = m_array | (1 << index);
+			m_array[bitbank] = m_array[bitbank] | (1 << bitindex);
 		}
 		else
 		{
-			m_array = m_array & ~(1 << index);
+			m_array[bitbank] = m_array[bitbank] & ~(1 << bitindex);
 		}
-		printf("desp   %x \n", fullb);
+	}
 
+	//Limpia (poner a 0) TODO el arreglo
+	void clearAll()
+	{
+		int bancos = m_size / 32;
+		for (int i = 0; i < bancos; i++)
+		{
+			m_array[i] = 0;
+		}
 	}
 
 	//imprimir en binario
 	void binaryprint()
 	{
-		std::cout << "0b";
-		for(int i =31; i>=0; i--)
+		//para cada banko
+		int bancos = m_size / 32;
+
+		for (int i = 0; i<bancos; i++)
 		{
-			uint32 b = (m_array >> i) & 1  ;
-			std::cout << (b ? "1" : "0") ;
+			std::cout << "0b";
+			for (int j = 31; j >= 0; j--)
+			{
+				uint32 b = (m_array[i] >> j) & 1;
+				std::cout << (b ? "1" : "0") ;
+			}
+			std::cout << std::endl;
 		}
+		
 		std::cout << "\n";
 	}
 };
