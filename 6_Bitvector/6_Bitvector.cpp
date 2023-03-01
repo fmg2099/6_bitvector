@@ -5,6 +5,80 @@
 #include "Bitvector.h"
 #include <fstream>
 
+Bitvector playerStatus = Bitvector(20);;
+
+//Leer archivo "de juego"
+void readSaveFile()
+{
+	//primero, leer 20 bits de estado
+	/*	12 bits son el inventario :
+		6 pociones y 6 armas
+		bit 13 : modo oscuro
+		bit 14 : status del personaje(gigante o normal)
+		bit 15 : status del personaje(enraged o normal)
+		bit 16 : status del personaje(flotando o en piso)
+		bit 17 : ha vencido nivel 1
+		bit 18 : ha vencido nivel 2
+		bit 19 : ha vencido nivel 3
+		bit 20 : ha vencido el jefe final*/
+	std::ifstream savefile;
+	savefile.open("save/datamine", std::ifstream::binary);
+	if (savefile.is_open())
+	{
+		//determinar tamano del archivo
+		savefile.seekg(0, savefile.end);
+		int filesize = savefile.tellg();
+		std::cout << "file size: " << filesize << "\n";
+		if (filesize > 0)
+		{
+			savefile.seekg(0, savefile.beg);
+			//buffer de 3 bytes para almacenar temporalmente los 20 bits
+			unsigned char* buffer = new unsigned char[3];
+			//limpiar buffer
+			memset(buffer, 0, 3);
+			savefile.read((char*)buffer, 3);
+
+			//imprimir valores en binario (para debug)
+			for (int i = 0; i < 3; i++)
+			{
+				std::cout << "savefile: 0b";
+				for (int j = 7; j >= 0; j--)
+				{
+					uint32 b = (buffer[i] >> j) & 1;
+					std::cout << (b ? "1" : "0");
+				}
+				std::cout << std::endl;
+			}
+
+			//convertir el buffer a bitvector
+			uint32 data = 0;
+			data = ((uint32)buffer[0] << 24);
+			data |= ((uint32)buffer[1] << 16);
+			data |= ((uint32)buffer[2] << 8);
+			playerStatus.setbank(data, 0);
+			playerStatus.binaryprint();
+			//invertir el orden de los bits
+			Bitvector temp = Bitvector(playerStatus);
+			temp.binaryprint();
+			for (int i = 31; i >= 0; i--)
+			{
+				std::cout << "val " << (temp.getval(i) ? "1" : "0") << "\n";
+				playerStatus.setval(false, 31 - i);
+			}
+			playerStatus.binaryprint();
+			savefile.close();
+		} 
+	}
+	else puts("no datamine :(");
+	return;
+}
+
+void parseStatusBits()
+{
+	//interpretar cada bit
+	//for(int i = 0)
+}
+
 
 int main()
 {
@@ -43,6 +117,9 @@ int main()
 	{
 		std::cout << "savefile not found\n";
 	}
+
+	//prueba de lectura de archivo binario
+	readSaveFile();
 
 	system("pause");
 	return 0;

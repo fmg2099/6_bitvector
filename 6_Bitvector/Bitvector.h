@@ -4,7 +4,7 @@ typedef unsigned long int uint32;
 
 class Bitvector
 {
-	//el tamano es de multiplos de 8 
+	//el tamano es de multiplos de 32
 	size_t m_size;
 	uint32 * m_array=0; //enteros de 32 bits
 
@@ -13,6 +13,11 @@ public:
 	uint32* getArray()
 	{
 		return m_array;
+	}
+	//constructor por copia
+	Bitvector(const Bitvector& bv)
+	{
+		
 	}
 
 	Bitvector(size_t newsize)
@@ -33,17 +38,18 @@ public:
 	}
 
 	//notacion con operador corchetes
-	bool operator[] (int idx)
+	bool operator[] (int idx) const
 	{
 		return getval(idx);
 	}
 	//getter
-	bool getval(int index)
+	bool getval(int index) const
 	{
 		int bitindex = index % 32;
 		int bitbank = index / 32;
 		return m_array[bitbank] & (1 << bitindex) >> bitindex;
 	}
+
 	//setter
 	void setval(bool b, int index)
 	{
@@ -56,6 +62,15 @@ public:
 		else
 		{
 			m_array[bitbank] = m_array[bitbank] & ~(1 << bitindex);
+		}
+	}
+
+	//establece un banco de bits completo
+	void setbank(uint32 bits, int index)
+	{
+		if (index < m_size/32 )
+		{
+			m_array[index] = bits;
 		}
 	}
 
