@@ -17,7 +17,10 @@ public:
 	//constructor por copia
 	Bitvector(const Bitvector& bv)
 	{
-		
+		this->m_size = 0;
+		this->m_size = bv.m_size;
+		this->m_array = new uint32[this->m_size / 32];
+		memcpy(this->m_array, bv.m_array, m_size / 8);
 	}
 
 	Bitvector(size_t newsize)
@@ -47,7 +50,7 @@ public:
 	{
 		int bitindex = index % 32;
 		int bitbank = index / 32;
-		return m_array[bitbank] & (1 << bitindex) >> bitindex;
+		return (m_array[bitbank] & (1 << bitindex)) >> bitindex;
 	}
 
 	//setter
@@ -85,6 +88,11 @@ public:
 	}
 
 	//imprimir en binario
+	void binaryprint(const char* name)
+	{
+		std::cout << name << " ";
+		binaryprint();
+	}
 	void binaryprint()
 	{
 		//para cada banko

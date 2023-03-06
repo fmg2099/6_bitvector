@@ -7,6 +7,24 @@
 
 Bitvector playerStatus = Bitvector(20);;
 
+const char* translateBool(bool b)
+{
+	return b ? "SI" : "NO";
+}
+
+void parseStatusBits()
+{
+	//interpretar cada bit
+	std::cout << "Tiene pocion de agua? " << translateBool(playerStatus[0]) << "\n";
+	std::cout << "Tiene pocion de fuego? " << translateBool(playerStatus[1]) << "\n";
+	std::cout << "Tiene pocion de aire? " << translateBool(playerStatus[2]) << "\n";
+	std::cout << "Tiene pocion de tierra? " << translateBool(playerStatus[3]) << "\n";
+	std::cout << "Tiene pocion de oficuo? " << translateBool(playerStatus[4]) << "\n";
+	std::cout << "Tiene pocion de plasma? " << translateBool(playerStatus[5]) << "\n";
+	std::cout << "Tiene espada de piedra? " << translateBool(playerStatus[6]) << "\n";
+	std::cout << "Boss defeated? " << translateBool(playerStatus[19]) << "\n";
+}
+
 //Leer archivo "de juego"
 void readSaveFile()
 {
@@ -21,6 +39,8 @@ void readSaveFile()
 		bit 18 : ha vencido nivel 2
 		bit 19 : ha vencido nivel 3
 		bit 20 : ha vencido el jefe final*/
+	//siguiente: entero de 32 bits que contiene el tamano de pantalla en X
+	//siguiente: entero de 32 bits con el tamano de pantalla en Y 
 	std::ifstream savefile;
 	savefile.open("save/datamine", std::ifstream::binary);
 	if (savefile.is_open())
@@ -59,26 +79,42 @@ void readSaveFile()
 			playerStatus.binaryprint();
 			//invertir el orden de los bits
 			Bitvector temp = Bitvector(playerStatus);
-			temp.binaryprint();
+			temp.binaryprint("temp");
 			for (int i = 31; i >= 0; i--)
 			{
-				std::cout << "val " << (temp.getval(i) ? "1" : "0") << "\n";
-				playerStatus.setval(false, 31 - i);
+				bool b = playerStatus.getval(i);
+				std::cout << "val " << (b? "1" : "0") << "\n";
+				playerStatus.setval(temp.getval(i) , 31 - i);
 			}
-			playerStatus.binaryprint();
+			playerStatus.binaryprint("playerstatus");
+
+			//interpretar los bits segun el protocolo disenado
+			parseStatusBits();
+
+			//interpretar res X
+			//savefile.seekg(4);
+			int* resx = new int;
+			*resx = 9999;
+			std::cout << "pos = " << savefile.tellg() << "\n";
+			savefile.read((char*)resx, 4);
+			std::cout << "resx = " << *resx << "\n";
+			std::cout << "pos = " << savefile.tellg() << "\n";
+
+			//interpretar res Y
+			int* resy = new int;
+			savefile.read((char*)resy, 4);
+			std::cout << "resy = " << *resy << "\n";
+
 			savefile.close();
+			//agregar codigo para que el programa pida al usuario
+			//resolucion en X, Y y se guarde en el archivo
+			//offset de resx = 3, offset de resy = 7
+
 		} 
 	}
-	else puts("no datamine :(");
+	else puts("Your game data save file is corrupted. :(");
 	return;
 }
-
-void parseStatusBits()
-{
-	//interpretar cada bit
-	//for(int i = 0)
-}
-
 
 int main()
 {
